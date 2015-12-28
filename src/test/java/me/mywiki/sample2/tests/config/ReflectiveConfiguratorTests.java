@@ -1,4 +1,4 @@
-package me.mywiki.sample2.tests;
+package me.mywiki.sample2.tests.config;
 
 import static org.junit.Assert.*;
 

@@ -31,21 +31,28 @@
 
 	<h1>Hello, visitor, please sign in.</h1>
 	<div> Currently we support google sign in here:
-		<form target="./login"  method="post">
-			<input type="submit" id="GoogleSigninButton"  value="Go" />
+		<form action="<%= "action/login" %>"  method="post">
+		<div>
+			<label> OpenIDConnect Google to localhost:18080
+				<input type="radio" name="loginOption" value="OpenIDConnect_google" checked>
+			</label>
+			</div>
+			<div>
+			<input type="submit" id="loginAction"  value="Login" />
+			</div>
 		</form> 
 	</div>
 	<div style="margin-top: 5em">
 		Or you can login with username and password, please contact 
-		<a href="ccozianu@acm.org"> Costin Cozianu &lt;ccozianu@acm.org&gt;</a>
+		<a href="mailto:ccozianu@acm.org"> Costin Cozianu &lt;ccozianu@acm.org&gt;</a>
 		for details.
 	</div>
 	<form target="./login"  method="post">
 		<div>
-			<span>Username: </span>			<input type="text" maxlength="20">	
+			<label>Username: 			<input type="text" maxlength="20"> </label>	
 		</div>
 		<div>
-			<span>password: </span> <input type="password" maxlength="20">
+			<label>password: <input type="password" maxlength="20"></label>
 		</div>
 	</form>
 </body>

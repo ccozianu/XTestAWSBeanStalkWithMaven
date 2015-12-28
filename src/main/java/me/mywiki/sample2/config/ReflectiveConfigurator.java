@@ -7,10 +7,14 @@ import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
-import static org.junit.Assert.*;
-import java.lang.UnsupportedOperationException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Verify;
+
+//import static org.junit.Assert.*;
 
 /**
  * A configuration is a map from name to values,
@@ -76,42 +80,38 @@ public class ReflectiveConfigurator {
                 Set<String> checkAgainstSpec( Class<?> readerClass_,
                                               Class<?> builderClass_) 
             {
-                
-                assertTrue("builder should be an interface", 
-                            builderClass_.isInterface());
+                Preconditions.checkArgument(builderClass_.isInterface(), "builder should be an interface"); 
                 
                 Set<String> builderPropNames= new HashSet<>();
                 
                 for (Method m: builderClass_.getDeclaredMethods()) {
                     String mName= m.getName();
                     if (mName.equals("done")) {
-                        assertTrue("done is a method with 0 paramters",  0 == m.getParameterCount());
-                        assertEquals("done retrusn the reade",readerClass_,m.getReturnType());
+                        Preconditions.checkArgument(  0 == m.getParameterCount(),"done is a method with 0 paramters");
+                        Preconditions.checkArgument(m.getReturnType().equals(readerClass_), "done returns the reader object");
                         continue;
                     }
                     // all other methods are setter of form Builder propertyName(PropType val);
-                    assertTrue("setter method: "+mName, 1 == m.getParameterCount());
-                    assertTrue("returning a builder for"+mName, builderClass_.equals(m.getReturnType()));
+                    Preconditions.checkArgument(1 == m.getParameterCount(), "setter method: "+mName );
+                    Preconditions.checkArgument(builderClass_.equals(m.getReturnType()), "returning a builder for"+mName );
                     builderPropNames.add(mName);
                 }
 
-                assertTrue( "builder should be an interface", 
-                            builderClass_.isInterface());
                 
                 Set <String> readerPropNames=  new HashSet<String>();
                 for (Method m: readerClass_.getMethods()) {
                     String mName= m.getName();
                     if (mName.equals("cloneBuilder")) {
-                        assertTrue("done is a method with 0 paramters",  0 == m.getParameterCount());
-                        assertEquals("done returns the reades",builderClass_,m.getReturnType());
+                        Preconditions.checkArgument(  0 == m.getParameterCount(), "cloneBuilder is a method with 0 paramters" );
+                        Preconditions.checkArgument( m.getReturnType().equals(builderClass_), "cloneBuilder returns the builder");
                         continue;
                     }
                     // all other methods are setter of form Builder propertyName(PropType val);
-                    assertEquals("getter method has 0 params "+mName, 0, m.getParameterCount());
+                    Preconditions.checkArgument( 0== m.getParameterCount() ,"getter method has 0 params "+mName );
                     readerPropNames.add(mName);
                 }
                 
-                assertEquals("Rwader properties match builder properties",readerPropNames, builderPropNames);
+                Preconditions.checkArgument( readerPropNames.equals(builderPropNames), "Reader properties match builder properties");
                 return readerPropNames;
             }
 
@@ -195,6 +195,9 @@ public class ReflectiveConfigurator {
                     String mName= m.getName();
                     if (mName.equals("cloneBuilder")) {
                         return makeBuilder(this.myValueMap);
+                    }
+                    else if(mName.equals("toString") && args == null) {
+                        return myValueMap.toString();
                     }
                     // accessor method
                     if (myValueMap.containsKey(mName)) {

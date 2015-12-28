@@ -61,6 +61,7 @@
   </profiles>
 
   <dependencies>
+  
 	<dependency>
 	  <groupId>com.fasterxml.jackson.core</groupId>
 	  <artifactId>jackson-databind</artifactId>
@@ -87,6 +88,25 @@
       <version>4.12</version>
       <scope>test</scope>
     </dependency>
+    
+   <dependency>
+		<groupId>org.apache.commons</groupId>
+		<artifactId>commons-lang3</artifactId>
+		<version>3.3</version>
+	</dependency>
+	
+	<dependency>
+		<groupId>org.apache.httpcomponents</groupId>
+		<artifactId>httpclient</artifactId>
+		<version>[4.4,)</version>
+	</dependency>
+
+	<dependency>
+			<groupId>com.nimbusds</groupId>
+			<artifactId>nimbus-jose-jwt</artifactId>
+			<version>3.9</version>
+	</dependency>
+	
   </dependencies>
   
   <build>
