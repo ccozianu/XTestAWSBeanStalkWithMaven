@@ -52,21 +52,36 @@ public class OpenIDProtocol {
 
     /**
      * redirect to authorization endpoints
-     * MUST have response_type=code
+     * MUST have response_type=code,
+     * the client asks that the answe should contain a code, to be used for furhter
+     * authentication/authorization interactions
      */
-    public static final String AUTH_PARAM_RESPONSE_TYPE = "response_type";
-    public static final String RESPONSE_TYPE_CODE = "code";
+    public static final String OIDC_PNAME_RESPONSE_TYPE = "response_type";
+    /**
+     * @see OIDC_PNAME_RESONSE_TYPE
+     */
+    public static final String OIDC_VALUE_CODE = "code";
     
-    public static final String AUTH_PARAM_CLIENT_ID = "client_id";
-    public static final String AUTH_PARAM_CALLBACK_URL = "redirect_uri";
-    public static final String AUTH_PARAM_STATE = "state";
-    public static final String AUTH_PARAM_NONCE = "nonce";
+    public static final String OIDC_PNAME_CLIENT_ID = "client_id";
+    public static final String OIDC_PNAME_CALLBACK_URL = "redirect_uri";
+    public static final String OIDC_PNAME_STATE = "state";
+    public static final String OIDC_PNAME_NONCE = "nonce";
     
-    public static final String AUTHCB_PARAM_CODE="code";
+    /**
+     * URL parameter name where authorization name will be passed, typically in the callback URL
+     * The client can take this code and use it to get more details, for example from the token server
+     * and user info server
+     */
+    public static final String OIDC_PNAME_AUTHCODE="code";
     
-    public static final String AUTH_PARAM_SCOPE = "scope";
+    public static final String OIDC_PNAME_SCOPE = "scope";
 
-    public static final long MAX_RESPONSE_LENGTH = 204800;
+    //TODO: maybe make it configurable
+    /**
+     * Our oidc client will abort if an http response from oidc provider
+     * is more than 200K, to prevent DOS whether intentional or from buggy software
+     */
+    public static final long OIDC_LIMIT_MAX_RESPONSE_LENGTH = 204800;
 
  
 
@@ -95,7 +110,7 @@ public class OpenIDProtocol {
                                                       String authObjectSessionName ) 
                                                      throws ClientProtocolException, IOException
     {
-        String codeVal= redirectRequest.getParameter(AUTHCB_PARAM_CODE);
+        String codeVal= redirectRequest.getParameter(OIDC_PNAME_AUTHCODE);
         if (StringUtils.isEmpty(codeVal)) {
             logger.info("Authorizationr redirect missing code");
             return false;
@@ -138,7 +153,7 @@ public class OpenIDProtocol {
                                             ? entity.getContentLength()
                                             : 0;
                     logger.info("Content length is: "+contentLength);                        
-                    if ( contentLength < MAX_RESPONSE_LENGTH) 
+                    if ( contentLength < OIDC_LIMIT_MAX_RESPONSE_LENGTH) 
                     {
                        String strResponse= EntityUtils.toString(entity);
                        ObjectMapper oMapper= new ObjectMapper();

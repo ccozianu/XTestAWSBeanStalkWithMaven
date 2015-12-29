@@ -29,6 +29,7 @@ public class OidcSimpleBootstrapFilter implements Filter {
      
     private OidcClientModule oidcClientModule;
     private OidcRequestHandler oidcHandler;
+    private String contextPath;
     
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
