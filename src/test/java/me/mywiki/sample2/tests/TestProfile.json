@@ -1,0 +1,12 @@
+{ "kind": "plus#personOpenIdConnect",
+"gender": "male",
+"sub": "113076110476829974944",
+"name": "Costin Cozianu",
+"given_name": "Costin",
+"family_name": "Cozianu",
+"profile": "https://plus.google.com/113076110476829974944",
+"picture": "https://lh5.googleusercontent.com/-UhmjQxcsBqg/AAAAAAAAAAI/AAAAAAAACgE/8IcMTjCwpDE/photo.jpg?sz=50",
+"email": "ccozianu@gmail.com",
+"email_verified": "true",
+"locale": "en"
+}

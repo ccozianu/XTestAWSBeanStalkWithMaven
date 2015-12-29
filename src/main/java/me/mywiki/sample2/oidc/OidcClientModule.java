@@ -9,6 +9,8 @@ import javax.servlet.FilterConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import me.mywiki.sample2.oidc.OidcClientModule.Err.ErrorData;
 import me.mywiki.sample2.oidc.OidcClientModule.OidcClientConfiguration;
 
@@ -18,6 +20,28 @@ import me.mywiki.sample2.oidc.OidcClientModule.OidcClientConfiguration;
  */
 public interface OidcClientModule {
     
+    /**
+     * 
+     */
+    public static class UserProfile {
+        public final String id;
+        public final String name;
+        public final String email;
+        public final String pictureUrl;
+        public final String profileUrl;
+        public UserProfile( @JsonProperty("sub") String id_,
+                            @JsonProperty("name") String name_,
+                            @JsonProperty("email") String email_,
+                            @JsonProperty("picture") String pictureUrl_,
+                            @JsonProperty("profile") String profileUrl_ ) 
+        {
+            this.id= id_;
+            this.name= name_;
+            this.email= email_;
+            this.pictureUrl= pictureUrl_;
+            this.profileUrl= profileUrl_;
+        }
+    }
 	
 	public static String SESSION_NAME_FOR_USER_OBJECT = "OIDC_USER_OBJECT";
 	public static String CUSTOM_NAME_FOR_USER_OBJECT  =  "SESSION_NAME_FOR_USER_OBJECT";
@@ -57,43 +81,54 @@ public interface OidcClientModule {
 
 	/**
 	 * This interface defines what configuration values are needed
-	 * for an open id client to inter-operate with an openid provider
+	 * for an open id client component to inter-operate with an openid provider
+	 * and to communicate with the web app
 	 */
 	public static interface OidcClientConfiguration {
+	    
+	    public static interface ProviderConfig {
+	        public String oidProviderBaseURL();
+	        public String oidClientId();
+	        public String oidClientRedirectURL();
+	        
+	        public String tokenServerURL();
+	        public String userinfoURL();
+	        
+	        public String oidClientSecret();
+	        
+	        public Builder cloneBuilder();
+	        
+	        public static interface Builder {
+	            
+	            Builder oidProviderBaseURL(String val);
+	            Builder oidClientId(String val);
+	            Builder oidClientRedirectURL(String val);
 
-        public String oidProviderBaseURL();
-        public String oidClientId();
-        public String oidClientRedirectURL();
-        
-        public String tokenServerURL();
-        public String userinfoURL();
-        
-        public String oidClientSecret();
-        
-        public Builder cloneBuilder();
-        
-        public static interface Builder {
-            
-            Builder oidProviderBaseURL(String val);
-            Builder oidClientId(String val);
-            Builder oidClientRedirectURL(String val);
+	            Builder tokenServerURL(String url);
+	            Builder userinfoURL( String url);
+	            
+	            Builder oidClientSecret(String val);
 
-            Builder tokenServerURL(String url);
-            Builder userinfoURL( String url);
-            
-            Builder oidClientSecret(String val);
-
-            OidcClientConfiguration done();
-            
-        }
+	            ProviderConfig done();
+	            
+	        }
+	        
+	    }
 
 
+	    public ProviderConfig providerCfg();
+	    
+	    public Builder cloneBuilder();
 
-
+	    public static interface Builder {
+	        Builder providerCfg(ProviderConfig val_);
+	        OidcClientConfiguration done();
+	    }
 
 
 
 	}
+	
 	
 	/**
 	 * Utilities for declaring errors
