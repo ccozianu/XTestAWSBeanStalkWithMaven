@@ -141,16 +141,27 @@ public interface OidcClientModule {
 	        public final int minorCode;
 	        public final String userMessage;
 	        public final Object extraData;
+	        public final String nextUrl;
+
+            public ErrorData( int majorCode_ ,
+                    int minorCode_ ,
+                    String userMessage_,
+                    Object extraData_) 
+            {
+                this( majorCode_,minorCode_,userMessage_,extraData_,null);
+            }
 	        
 	        public ErrorData( int majorCode_ ,
                               int minorCode_ ,
                               String userMessage_,
-                              Object extraData_) 
+                              Object extraData_,
+                              String nextUrl_ ) 
 	        {
                 this.majorCode=  majorCode_;
                 this.minorCode= minorCode_;
                 this.userMessage= userMessage_;
                 this.extraData=  extraData_;
+                this.nextUrl= nextUrl_;
             }
 	    }
 

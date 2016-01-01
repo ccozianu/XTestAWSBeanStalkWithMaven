@@ -43,7 +43,7 @@ import com.nimbusds.jwt.JWT;
 import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.ReadOnlyJWTClaimsSet;
 
-import me.mywiki.sample2.ccozianu_dev.OidcClientImpl;
+import me.mywiki.sample2.ccozianu_dev.CcozianuDevModuleImpl;
 import me.mywiki.sample2.oidc.OidcClientModule;
 import me.mywiki.sample2.oidc.OidcClientModule.OidcClientConfiguration;
 import me.mywiki.sample2.oidc.OidcClientModule.OidcRequestHandler;
@@ -72,7 +72,7 @@ public class OidcSimpleImpl implements OidcRequestHandler {
             formparams.add(new BasicNameValuePair("grant_type", "authorization_code"));
             formparams.add(new BasicNameValuePair("code", codeVal ));
             //TODO: verify this is not needed here
-            formparams.add(new BasicNameValuePair("redirect_uri", this.oidcClientCfg.providerCfg().oidClientRedirectURL()));
+            formparams.add(new BasicNameValuePair("redirect_uri", buildCallbackURI(redirectRequest).toString()));
             UrlEncodedFormEntity 
                 submitForm = new UrlEncodedFormEntity( formparams, 
                                                        StandardCharsets.UTF_8);
@@ -189,7 +189,7 @@ public class OidcSimpleImpl implements OidcRequestHandler {
 	    
 	    htRequest.getSession(true).setAttribute("OIDC_PROVIDER", chosenProvider);
         
-        URI authURI= buildLoginURI();
+        URI authURI= buildProviderLoginURI( htRequest );
         logger.info("Redirecting to: "+authURI);
         try {
             htResponse.sendRedirect(authURI.toString());
@@ -203,7 +203,7 @@ public class OidcSimpleImpl implements OidcRequestHandler {
     private OidcClientConfiguration oidcClientCfg;
     private static final SecureRandom sRandom= new SecureRandom();
     
-    private static Logger logger= Logger.getLogger(OidcClientImpl.class.getName());
+    private static Logger logger= Logger.getLogger(CcozianuDevModuleImpl.class.getName());
 
     public OidcSimpleImpl( FilterConfig cfg_,
                      OidcClientConfiguration oidcClientCfg_ ) 
@@ -212,20 +212,29 @@ public class OidcSimpleImpl implements OidcRequestHandler {
         this.oidcClientCfg= oidcClientCfg_;
     }
 
-    private URI buildLoginURI() {
+    private URI buildCallbackURI( HttpServletRequest req) throws URISyntaxException {
+        return new URIBuilder()
+                .setScheme(req.getScheme())
+                .setHost(req.getServerName())
+                .setPort(req.getServerPort())
+                .setPath(req.getContextPath() +  oidcClientCfg.providerCfg().oidClientRedirectURL())
+                .build();        
+    }
+    private URI buildProviderLoginURI(HttpServletRequest req) {
         try {
+            
             return new URIBuilder( oidcClientCfg.providerCfg().oidProviderBaseURL())
-                            .addParameter(OpenIDProtocol.OIDC_PNAME_RESPONSE_TYPE, 
-                                          OpenIDProtocol.OIDC_VALUE_CODE)
-                            .addParameter( OpenIDProtocol.OIDC_PNAME_CLIENT_ID ,
-                                           oidcClientCfg.providerCfg().oidClientId() )
-                            .addParameter( OpenIDProtocol.OIDC_PNAME_CALLBACK_URL, 
-                                           oidcClientCfg.providerCfg().oidClientRedirectURL())
-                            .addParameter( OpenIDProtocol.OIDC_PNAME_STATE, 
-                                           stateValue())
-                            .addParameter( OpenIDProtocol.OIDC_PNAME_NONCE ,
-                                           nonceValue())
-                            .addParameter(OpenIDProtocol.OIDC_PNAME_SCOPE, "openid profile email")
+                                .addParameter( OpenIDProtocol.OIDC_PNAME_RESPONSE_TYPE, 
+                                               OpenIDProtocol.OIDC_VALUE_CODE)
+                                .addParameter( OpenIDProtocol.OIDC_PNAME_CLIENT_ID ,
+                                               oidcClientCfg.providerCfg().oidClientId() )
+                                .addParameter( OpenIDProtocol.OIDC_PNAME_CALLBACK_URL, 
+                                               buildCallbackURI(req).toString())
+                                .addParameter( OpenIDProtocol.OIDC_PNAME_STATE, 
+                                               stateValue())
+                                .addParameter( OpenIDProtocol.OIDC_PNAME_NONCE ,
+                                               nonceValue())
+                                .addParameter(OpenIDProtocol.OIDC_PNAME_SCOPE, "openid profile email")
                             .build();
             }
             catch (URISyntaxException ex) {

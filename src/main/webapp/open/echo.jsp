@@ -8,6 +8,41 @@
 </head>
 <body>
 <h1>Request </h1>
+
+	<table>
+	<thead>
+		<tr>
+		<th colspan="2">Request parsing</th>
+		</tr>
+		<tr>
+		<th>Field</th>
+		<th>Value</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td align="right"> Scheme </td>
+			<td align="left"> <%= request.getScheme() %> </td>
+		</tr>
+		<tr>
+			<td align="right"> ServerName</td>
+			<td align="left"> <%= request.getServerName() %> </td>	
+		</tr>
+		<tr>
+			<td align="right"> ServerPort </td>
+			<td align="left"> <%= request.getServerPort() %> </td>	
+		</tr>		
+	    <tr>
+			<td align="right"> ContextPath </td>
+			<td align="left"> <%= request.getContextPath() %> </td>	
+		</tr>
+	    <tr>
+			<td align="right"> ServletPath </td>
+			<td align="left"> <%= request.getServletPath() %> </td>	
+		</tr>
+	</tbody>
+	</table>
+	
 	<table>
 	<tbody>
 	<%  //begin for
