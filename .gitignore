@@ -1,2 +1,3 @@
-/target/
+target/
+src/main/java/me/mywiki/sample2/ccozianu_dev/CcozianuDevModuleImpl.java
 .settings
