@@ -30,6 +30,7 @@ public class OidcSimpleBootstrapFilter implements Filter {
     private OidcClientModule oidcClientModule;
     private OidcRequestHandler oidcHandler;
     private String contextPath;
+    private boolean enforceHttps= false;
     
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -37,6 +38,7 @@ public class OidcSimpleBootstrapFilter implements Filter {
             Class<? extends OidcClientModule> clazz= readFromJ2eeConfig( filterConfig);
             this.oidcClientModule= clazz.newInstance();
             this.oidcHandler= oidcClientModule.initialize(filterConfig);
+            this.enforceHttps= oidcHandler.webAppComponentConfig().needsHttps();
         }
         catch (Exception ex) {
             if (ex instanceof RuntimeException) { throw (RuntimeException) ex; }
@@ -80,6 +82,11 @@ public class OidcSimpleBootstrapFilter implements Filter {
     {
         HttpServletRequest htReq= (HttpServletRequest) request;
         HttpServletResponse htResponse= (HttpServletResponse) response;
+        
+        if (checkEnforceHttps( htReq, htResponse)) {
+            return;
+        }
+        
         if ( needsLogin(htReq)
              && ! isAlreadyLoggedIn(htReq)) 
         {
@@ -92,7 +99,11 @@ public class OidcSimpleBootstrapFilter implements Filter {
             if (handleOidcCallbackRedirect(htReq, htResponse)) {
                 return;
             }
-            
+            if (htReq.getServletPath().equals("/index.jsp")) {
+                htReq.getRequestDispatcher("/login.jsp").forward(htReq, htResponse);
+                return;
+            }
+                
             sendToAuthError( htReq, htResponse, OidcClientModule.Err.notAuthenticated(htReq,htResponse));
         
             return;
@@ -101,6 +112,21 @@ public class OidcSimpleBootstrapFilter implements Filter {
         // if either the resource does not require auth
         // or the user is already authenticated pass the request down the chain
         chain.doFilter(request, response);
+    }
+
+    private boolean checkEnforceHttps(HttpServletRequest htReq, HttpServletResponse htResponse) 
+            throws IOException
+    {
+        String scheme= htReq.getScheme();
+        if (enforceHttps && ! scheme.equals("https")) {
+            //TODO: simplifying assumption we can redirect to port 443, configurize that
+            // redirect to the same thing but with https
+            String reqUrl=  htReq.getRequestURL().toString();
+            Verify.verify(reqUrl.startsWith("http:"), "broken assumption, cannont handle non HTTP or HTTPS");
+            htResponse.sendRedirect("https:" + reqUrl.substring("http:".length()));
+            return true;
+        }
+        return false;
     }
 
     private boolean handleOidcCallbackRedirect( HttpServletRequest htReq, 

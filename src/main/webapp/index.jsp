@@ -6,7 +6,6 @@
 	UserProfile visitor= session != null 
 						? (UserProfile) session.getAttribute(OidcClientModule.DEFAULT_USERDATA_SESSION_NAME)
 	        			: null ;
-	//this.getServletContext().get
 	if (visitor == null ) {
 		application.getRequestDispatcher("/login.jsp").forward(request, response);
 		return;

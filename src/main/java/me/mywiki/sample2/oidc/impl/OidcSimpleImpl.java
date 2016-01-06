@@ -48,12 +48,18 @@ import me.mywiki.sample2.oidc.OidcClientModule;
 import me.mywiki.sample2.oidc.OidcClientModule.OidcClientConfiguration;
 import me.mywiki.sample2.oidc.OidcClientModule.OidcRequestHandler;
 import me.mywiki.sample2.oidc.OidcClientModule.UserProfile;
+import me.mywiki.sample2.oidc.OidcClientModule.OidcClientConfiguration.WebAppComponentConfig;
 
 /**
  * The actual meat and bones of the implementation
  */
 public class OidcSimpleImpl implements OidcRequestHandler {
 	
+   @Override
+   public WebAppComponentConfig webAppComponentConfig() {
+       return oidcClientCfg.webAppComponentConfig();
+   }
+    
     @Override
     public boolean processOidcCallback(HttpServletRequest redirectRequest, HttpServletResponse htResponse, String chosenProvider) {
         String codeVal= redirectRequest.getParameter(OIDC_PNAME_AUTHCODE);

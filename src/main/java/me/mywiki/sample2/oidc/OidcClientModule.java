@@ -11,8 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import me.mywiki.sample2.oidc.OidcClientModule.Err.ErrorData;
-import me.mywiki.sample2.oidc.OidcClientModule.OidcClientConfiguration;
+
 
 /**
  * This interface defines the mechanism to instantiate 
@@ -67,6 +66,7 @@ public interface OidcClientModule {
 	public interface OidcRequestHandler  {
 		public void  processOidcStart(HttpServletRequest req, HttpServletResponse response, String chosenProvider );
 		public boolean  processOidcCallback( HttpServletRequest req, HttpServletResponse response, String chosenProvider );
+        public OidcClientConfiguration.WebAppComponentConfig webAppComponentConfig();
 	}
 	
 	public static interface OpenIDClient  {
@@ -86,44 +86,58 @@ public interface OidcClientModule {
 	 */
 	public static interface OidcClientConfiguration {
 	    
-	    public static interface ProviderConfig {
-	        public String oidProviderBaseURL();
-	        public String oidClientId();
-	        public String oidClientRedirectURL();
-	        
-	        public String tokenServerURL();
-	        public String userinfoURL();
-	        
-	        public String oidClientSecret();
-	        
-	        public Builder cloneBuilder();
-	        
-	        public static interface Builder {
-	            
-	            Builder oidProviderBaseURL(String val);
-	            Builder oidClientId(String val);
-	            Builder oidClientRedirectURL(String val);
-
-	            Builder tokenServerURL(String url);
-	            Builder userinfoURL( String url);
-	            
-	            Builder oidClientSecret(String val);
-
-	            ProviderConfig done();
-	            
-	        }
-	        
-	    }
-
-
 	    public ProviderConfig providerCfg();
+        public WebAppComponentConfig webAppComponentConfig();
+
+        public static interface ProviderConfig {
+            public String oidProviderBaseURL();
+            public String oidClientId();
+            public String oidClientRedirectURL();
+            
+            public String tokenServerURL();
+            public String userinfoURL();
+            
+            public String oidClientSecret();
+            
+            public Builder cloneBuilder();
+            
+            public static interface Builder {
+                
+                Builder oidProviderBaseURL(String val);
+                Builder oidClientId(String val);
+                Builder oidClientRedirectURL(String val);
+
+                Builder tokenServerURL(String url);
+                Builder userinfoURL( String url);
+                
+                Builder oidClientSecret(String val);
+
+                ProviderConfig done();
+            }
+            
+        }
+
+
+        public static interface WebAppComponentConfig {
+            
+            boolean needsHttps();
+            Builder cloneBuilder();
+
+            public static interface Builder {
+                Builder  needsHttps(boolean val_);
+                WebAppComponentConfig done();
+            }
+        }
 	    
 	    public Builder cloneBuilder();
 
 	    public static interface Builder {
 	        Builder providerCfg(ProviderConfig val_);
+	        Builder webAppComponentConfig(WebAppComponentConfig val_);
 	        OidcClientConfiguration done();
+	        
 	    }
+
 
 
 
