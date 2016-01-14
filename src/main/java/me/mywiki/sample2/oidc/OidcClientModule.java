@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public interface OidcClientModule {
     
     /**
-     * 
+     * TODO: re-org this into a better type provider like
      */
     public static class UserProfile {
         public final String id;

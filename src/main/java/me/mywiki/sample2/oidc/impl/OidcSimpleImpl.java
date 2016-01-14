@@ -101,6 +101,9 @@ public class OidcSimpleImpl implements OidcRequestHandler {
                 try (CloseableHttpResponse authResponse = httpClient.execute(httpPost)) {
                     logger.info("Response status: "+authResponse.getStatusLine());
                     logger.info("Response headers: "+ Arrays.asList( authResponse.getAllHeaders()));
+                    if (authResponse.getStatusLine().getStatusCode() != 200 ) {
+                        throw new RuntimeException("Invalid (maybe stale/replay) redirect request");
+                    }
                     HttpEntity entity= authResponse.getEntity();
                     long contentLength = entity != null 
                                             ? entity.getContentLength()
@@ -145,6 +148,8 @@ public class OidcSimpleImpl implements OidcRequestHandler {
         }
         catch (Exception ex) {
             logger.log(Level.WARNING, ex, () -> "Exception thrown trying to get the tokens");
+            if (ex instanceof RuntimeException) { throw (RuntimeException)ex; }
+            else                                { throw  new RuntimeException(ex); }
         }
         
         return false;
