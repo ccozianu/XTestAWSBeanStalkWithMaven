@@ -30,10 +30,10 @@
 <body>
 
 	<h1>Hello, visitor, please sign in.</h1>
-	<div> Currently we support google sign in here:
+	<div> Currently we support the following sign in option google (initial prototy, only G+ sign):
 		<form action="<%= "action/login" %>"  method="post">
 		<div>
-			<label> OpenIDConnect Google to localhost:18080
+			<label> 
 				<input type="radio" name="loginOption" value="OpenIDConnect_google" checked>
 			</label>
 			</div>

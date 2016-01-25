@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import me.mywiki.sample2.oidc.OidcClientModule.UserProfile;
+import me.mywiki.sample2.oidc.UserProfile;
 
 /**
  * This test will fail if we haven't gotten our JSON dependencies 

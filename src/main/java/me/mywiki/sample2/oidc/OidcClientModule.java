@@ -2,14 +2,12 @@ package me.mywiki.sample2.oidc;
 
 import java.net.URI;
 import java.util.Map;
-import java.util.Optional;
 
-import javax.servlet.Filter;
 import javax.servlet.FilterConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import me.mywiki.sample2.webapp.TestMywikiMe;
 
 
 
@@ -19,30 +17,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public interface OidcClientModule {
     
-    /**
-     * TODO: re-org this into a better type provider like
-     */
-    public static class UserProfile {
-        public final String id;
-        public final String name;
-        public final String email;
-        public final String pictureUrl;
-        public final String profileUrl;
-        public UserProfile( @JsonProperty("sub") String id_,
-                            @JsonProperty("name") String name_,
-                            @JsonProperty("email") String email_,
-                            @JsonProperty("picture") String pictureUrl_,
-                            @JsonProperty("profile") String profileUrl_ ) 
-        {
-            this.id= id_;
-            this.name= name_;
-            this.email= email_;
-            this.pictureUrl= pictureUrl_;
-            this.profileUrl= profileUrl_;
-        }
-    }
-	
-	public static String SESSION_NAME_FOR_USER_OBJECT = "OIDC_USER_OBJECT";
+    public static String SESSION_NAME_FOR_USER_OBJECT = "OIDC_USER_OBJECT";
 	public static String CUSTOM_NAME_FOR_USER_OBJECT  =  "SESSION_NAME_FOR_USER_OBJECT";
     public static String DEFAULT_USERDATA_SESSION_NAME = "me.mywiki.oidc.Oidc_UserData";
     public static String DEFAULT_IDCLAIMS_SESION_NAME = "me.mywiki.oidc.Oidc_IDClaims";
@@ -58,6 +33,12 @@ public interface OidcClientModule {
 	public OidcRequestHandler initialize( FilterConfig cfg_ );
 	
 
+	public static class OidcAuthError extends RuntimeException {
+	    public OidcAuthError() { }
+        public OidcAuthError(String msg) { super(msg); }
+
+        private static final long serialVersionUID = -2473389450100453103L;
+	}
 
 	/**
 	 * The concrete filter object (ServletFilter as per j2ee spec servlet-api  >2.5 ) that can be installed
@@ -146,8 +127,9 @@ public interface OidcClientModule {
 	
 	/**
 	 * Utilities for declaring errors
-	 * @author Costin
-	 *
+	 * TODO: needs refactoring as currently a hack, it couples in error handling
+	 *       with a particular wepapp context
+	 *       this class does not belong in OIDC package
 	 */
 	public static class Err {
 	    public static class ErrorData {
@@ -177,7 +159,17 @@ public interface OidcClientModule {
                 this.extraData=  extraData_;
                 this.nextUrl= nextUrl_;
             }
+	 
+	        /**
+	         * TODO: move this utility outta here
+	         */
+	        @Deprecated
+	        public static ErrorData fromRequest (HttpServletRequest req) {
+	            return (ErrorData) req.getAttribute( TestMywikiMe.BootstrapFiler.OIDC_FILTER_ERROR );
+	        }
 	    }
+	    
+
 
         public static ErrorData notAuthenticated(HttpServletRequest htReq, HttpServletResponse htResponse) {
            //TODO: extract constants for error codes

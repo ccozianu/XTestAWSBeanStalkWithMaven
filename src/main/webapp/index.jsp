@@ -1,4 +1,4 @@
-<%@page import="me.mywiki.sample2.oidc.OidcClientModule.UserProfile"%>
+<%@page import="me.mywiki.sample2.oidc.UserProfile"%>
 <%@page import="me.mywiki.sample2.oidc.OidcClientModule"%>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>

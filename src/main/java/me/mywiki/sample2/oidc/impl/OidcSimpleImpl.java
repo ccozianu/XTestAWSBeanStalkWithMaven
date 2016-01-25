@@ -1,7 +1,5 @@
 package me.mywiki.sample2.oidc.impl;
 
-import static me.mywiki.sample2.oidc.impl.OpenIDProtocol.OIDC_PNAME_AUTHCODE;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -47,7 +45,7 @@ import me.mywiki.sample2.ccozianu_dev.CcozianuDevModuleImpl;
 import me.mywiki.sample2.oidc.OidcClientModule;
 import me.mywiki.sample2.oidc.OidcClientModule.OidcClientConfiguration;
 import me.mywiki.sample2.oidc.OidcClientModule.OidcRequestHandler;
-import me.mywiki.sample2.oidc.OidcClientModule.UserProfile;
+import me.mywiki.sample2.oidc.UserProfile;
 import me.mywiki.sample2.oidc.OidcClientModule.OidcClientConfiguration.WebAppComponentConfig;
 
 /**
@@ -62,7 +60,7 @@ public class OidcSimpleImpl implements OidcRequestHandler {
     
     @Override
     public boolean processOidcCallback(HttpServletRequest redirectRequest, HttpServletResponse htResponse, String chosenProvider) {
-        String codeVal= redirectRequest.getParameter(OIDC_PNAME_AUTHCODE);
+        String codeVal= redirectRequest.getParameter(OidcNames.OIDC_PNAME_AUTHCODE);
         if (StringUtils.isEmpty(codeVal)) {
             logger.severe("Authorization redirect missing code");
             return false;
@@ -109,7 +107,7 @@ public class OidcSimpleImpl implements OidcRequestHandler {
                                             ? entity.getContentLength()
                                             : 0;
                     logger.info("Content length is: "+contentLength);                        
-                    if ( contentLength < OpenIDProtocol.OIDC_LIMIT_MAX_RESPONSE_LENGTH) 
+                    if ( contentLength < OIDC_LIMIT_MAX_RESPONSE_LENGTH) 
                     {
                        String strResponse= EntityUtils.toString(entity);
                        ObjectMapper oMapper= new ObjectMapper();
@@ -173,8 +171,6 @@ public class OidcSimpleImpl implements OidcRequestHandler {
     private final ObjectMapper mapper= new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     private Object retrieveUserProfile(String authToken) throws IOException {
-	       String result = null;
-	        
 	        HttpGet httpGet = new HttpGet(oidcClientCfg.providerCfg().userinfoURL());
 	        httpGet.addHeader("Authorization", "Bearer " + authToken);
 
@@ -183,17 +179,18 @@ public class OidcSimpleImpl implements OidcRequestHandler {
 	        {
 	            int responseStatus= response.getStatusLine().getStatusCode();
 	            logger.info("UserInfo response status code: " + responseStatus );
-	            if (response.getStatusLine().getStatusCode() == 200)  {
+	            if (responseStatus == 200)  {
 	                HttpEntity httpEntity= response.getEntity();
 	                logger.info("UserInfo response content type: " + ContentType.getOrDefault(httpEntity));
 	                //TODO: this is dubious
 	                return mapper.readerFor(UserProfile.class).readValue(httpEntity.getContent());
 	            }
+	            else {
+	                throw new OidcClientModule.OidcAuthError("Waiting for HTTP 200 from the profile provider, got: " + responseStatus);
+	            }
 	        }
-	        //TODO: deal with non http 200 cases
-	        return null;
-	 }
-
+	        
+    }
 
     @Override
 	public void processOidcStart(HttpServletRequest htRequest, HttpServletResponse htResponse, String chosenProvider) {
@@ -231,21 +228,22 @@ public class OidcSimpleImpl implements OidcRequestHandler {
                 .setPath(req.getContextPath() +  oidcClientCfg.providerCfg().oidClientRedirectURL())
                 .build();        
     }
+    
     private URI buildProviderLoginURI(HttpServletRequest req) {
         try {
             
             return new URIBuilder( oidcClientCfg.providerCfg().oidProviderBaseURL())
-                                .addParameter( OpenIDProtocol.OIDC_PNAME_RESPONSE_TYPE, 
-                                               OpenIDProtocol.OIDC_VALUE_CODE)
-                                .addParameter( OpenIDProtocol.OIDC_PNAME_CLIENT_ID ,
+                                .addParameter( OidcNames.OIDC_PNAME_RESPONSE_TYPE, 
+                                               OidcNames.OIDC_VALUE_CODE)
+                                .addParameter( OidcNames.OIDC_PNAME_CLIENT_ID ,
                                                oidcClientCfg.providerCfg().oidClientId() )
-                                .addParameter( OpenIDProtocol.OIDC_PNAME_CALLBACK_URL, 
+                                .addParameter( OidcNames.OIDC_PNAME_CALLBACK_URL, 
                                                buildCallbackURI(req).toString())
-                                .addParameter( OpenIDProtocol.OIDC_PNAME_STATE, 
+                                .addParameter( OidcNames.OIDC_PNAME_STATE, 
                                                stateValue())
-                                .addParameter( OpenIDProtocol.OIDC_PNAME_NONCE ,
+                                .addParameter( OidcNames.OIDC_PNAME_NONCE ,
                                                nonceValue())
-                                .addParameter(OpenIDProtocol.OIDC_PNAME_SCOPE, "openid profile email")
+                                .addParameter(OidcNames.OIDC_PNAME_SCOPE, "openid profile email")
                             .build();
             }
             catch (URISyntaxException ex) {
@@ -261,5 +259,50 @@ public class OidcSimpleImpl implements OidcRequestHandler {
     private String stateValue() { return "STATE-" + Long.toHexString(sRandom.nextLong()); }
 
 
-	
+    public static final long OIDC_LIMIT_MAX_RESPONSE_LENGTH = 204800;
+
+
+    /**
+     * This class encapsulates what we know about OpenID protocol
+     */
+    public static class OidcNames {
+     
+
+
+        /**
+         * redirect to authorization endpoints
+         * MUST have response_type=code,
+         * the client asks that the answe should contain a code, to be used for furhter
+         * authentication/authorization interactions
+         */
+        public static final String OIDC_PNAME_RESPONSE_TYPE = "response_type";
+        /**
+         * @see OIDC_PNAME_RESONSE_TYPE
+         */
+        public static final String OIDC_VALUE_CODE = "code";
+        
+        public static final String OIDC_PNAME_CLIENT_ID = "client_id";
+        public static final String OIDC_PNAME_CALLBACK_URL = "redirect_uri";
+        public static final String OIDC_PNAME_STATE = "state";
+        public static final String OIDC_PNAME_NONCE = "nonce";
+        
+        /**
+         * URL parameter name where authorization name will be passed, typically in the callback URL
+         * The client can take this code and use it to get more details, for example from the token server
+         * and user info server
+         */
+        public static final String OIDC_PNAME_AUTHCODE="code";
+        
+        public static final String OIDC_PNAME_SCOPE = "scope";
+
+        //TODO: maybe make it configurable
+        /**
+         * Our oidc client will abort if an http response from oidc provider
+         * is more than 200K, to prevent DOS whether intentional or from buggy software
+         */
+      
+
+
+    }
+
 }

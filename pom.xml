@@ -17,6 +17,16 @@
         <maven.deploy.skip>true</maven.deploy.skip>
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
 
+        <!--  
+        	beanstalker properties
+        	this will allow web app to be deployed to AWS Elastic Beanstalk,
+        	but only from Costin Cozianu's desktop which has proper credentials
+        	and accoutn coordinates, separate from codebase.
+        	
+        	TODO: this is a quick hack and need to be replaced
+        	      as entangles the code base with configuration needed
+        	      to do the deployment 
+          -->
         <beanstalker.region>us-west-2</beanstalker.region>
 		<beanstalk.applicationName>XTestAWSBeansStalkWithMaven-2</beanstalk.applicationName>
         <!--  these I have tried to generate at build time, will circle back to it later
@@ -101,12 +111,19 @@
 		<version>[4.4,)</version>
 	</dependency>
 
+	<!-- This provides signing and encrypting of JSON -->
 	<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>nimbus-jose-jwt</artifactId>
 			<version>3.9</version>
 	</dependency>
 	
+	<!-- Let's trybut not least Stripes -->
+	<dependency>
+		<groupId>net.sourceforge.stripes</groupId>
+		<artifactId>stripes</artifactId>
+		<version>1.5.8</version>
+	</dependency>
   </dependencies>
   
   <build>

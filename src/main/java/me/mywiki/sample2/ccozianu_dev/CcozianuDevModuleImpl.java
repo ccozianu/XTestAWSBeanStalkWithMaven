@@ -8,9 +8,8 @@ import javax.servlet.FilterConfig;
 
 import me.mywiki.sample2.config.ConfigUtils;
 import me.mywiki.sample2.config.ReflectiveConfigurator;
+import me.mywiki.sample2.config.ConfigUtils.XDG;
 import me.mywiki.sample2.oidc.OidcClientModule;
-import me.mywiki.sample2.oidc.OidcClientModule.OidcClientConfiguration.Builder;
-import me.mywiki.sample2.oidc.OidcClientModule.OidcClientConfiguration.ProviderConfig;
 import me.mywiki.sample2.oidc.OidcClientModule.OidcClientConfiguration.WebAppComponentConfig;
 import me.mywiki.sample2.oidc.impl.OidcSimpleImpl;
 
@@ -60,13 +59,13 @@ public class CcozianuDevModuleImpl implements OidcClientModule {
                                             // this is not the real secret, the real secret is different
                                             //.oidClientSecret("qd4K5xRXHNIVK6zVlUiYFflu")
                                             .oidClientSecret(
-                                                ConfigUtils.aesDecryptionOf(
+                                                ConfigUtils.decodeAsAesBlob(
                                                                 "CXILH5AZRHJ4O5YRS2XLZRCOMGKDQDECOVAC73NKSNVQ2RDGDJCA===="
                                                                  +'.'
                                                                  +"Z6PJSWDORYWLE3YV5NIOGD46IBVDPUL4DW6GHEL4XS3KUS3J67ZOSCN2IHMWNIES")
                                                             .byPasswordDerivedKey( 
-                                                                    ConfigUtils.contentsAsString(
-                                                                            ConfigUtils.xdgConfigFile( "me.mywiki",
+                                                                    XDG.contentsAsString(
+                                                                            XDG.xdgConfigFile( "me.mywiki",
                                                                                            "software_master_password"))
                                                                     ,"me.mywiki","com.google/me.mywiki/clientSecret"
                                                                     )) 
@@ -83,13 +82,17 @@ public class CcozianuDevModuleImpl implements OidcClientModule {
                                         .done();
         
              
-           // temporarily until we migrate to secret based crap
+           // temporarily until we migrate to AWS secret based something
+           // TODO: decouple AWS settings from the LocalDev settings
            public static final OidcClientConfiguration 
                TestMywikiMe_AWS = TestMywikiMe_LocalDev.cloneBuilder()
                                        .webAppComponentConfig( 
                                                TestMywikiMe_LocalDev.webAppComponentConfig() .cloneBuilder()
                                                    .needsHttps(true).done() )
                                        .done();
+           public static class DevDesktop {
+               
+           }
     }
 
     @Override
